@@ -10,6 +10,10 @@ With Twitter Bootstrap 3 the typeahead plugin had been dropped. [@mdo](http://tw
 `Typeahead.js` doesn't seem ready for the new Twitter Bootstrap 3 at the moment. Code is not up to date and fixes are need. See also:
 [Typeahead problems with Bootstrap 3.0 RC1](http://stackoverflow.com/questions/18167246/typeahead-problems-with-bootstrap-3-0-rc1).
 
+Modifications
+-------------
+Modified to support data-source="/url/to/typeahead" as in jasny's bootstrap modifications
+
 Download
 ========
 
