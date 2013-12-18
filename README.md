@@ -62,9 +62,13 @@ Options can be passed via data attributes or JavaScript. For data attributes, ap
               <tbody>
                 <tr>
                  <td>source</td>
-                 <td>array, function</td>
+                 <td>array, function, url</td>
                  <td>[ ]</td>
-                 <td>The data source to query against. May be an array of strings or a function. The function accepts two arguments, the <code>query</code> value in the input field and the <code>process</code> callback. The function may be used synchronously by returning the data source directly or asynchronously via the <code>process</code> callback's single argument.</td>
+                 <td>
+					<p>The data source to query against. May be an array of strings, an object as key/value pairs, a url (string) to get the data using AJAX or a function.</p>
+					<p>When using AJAX, the server should output a valid JSON array or key/value pair object.</p>
+					<p>The function accepts two arguments, the <code>query</code> value in the input field and the <code>process</code> callback. The function may be used synchronously by returning the data source directly or asynchronously via the <code>process</code> callback's single argument.</p>
+				</td>
                </tr>
                <tr>
                  <td>items</td>

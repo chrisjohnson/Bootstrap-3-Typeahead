@@ -51,10 +51,6 @@
           // They specified a URL to perform an ajax search
           this.source = this.ajaxSearch
           this.url = this.options.source
-          this.ajaxTimeout = 400;
-          if (this.options.ajaxTimeout) {
-            this.ajaxTimeout = this.options.ajaxTimeout;
-          }
         }
       }
     }
