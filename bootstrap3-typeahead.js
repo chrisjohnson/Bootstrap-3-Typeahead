@@ -1,8 +1,9 @@
 /* =============================================================
  * bootstrap3-typeahead.js v3.0
- * https://github.com/bassjobsen/Bootstrap-3-Typeahead
+ * https://github.com/chrisjohnson/Bootstrap-3-Typeahead
  * =============================================================
- * Original written by @mdo and @fat
+ * Original written by @mdo and @fat and @bassjobsen
+ * Modifications by Chris Johnson
  * =============================================================
  * Copyright 2013 Bass Jobsen @bassjobsen
  *
@@ -40,7 +41,24 @@
     this.$menu = $(this.options.menu)
     this.shown = false
     this.listen(),
-	this.showHintOnFocus = typeof this.options.showHintOnFocus == 'boolean' ? this.options.showHintOnFocus : false
+    this.showHintOnFocus = typeof this.options.showHintOnFocus == 'boolean' ? this.options.showHintOnFocus : false;
+    if (typeof this.options.source == 'string') {
+      try {
+        // Try parsing the source
+        JSON.parse(this.options.source);
+      } catch (e) {
+        if (typeof this.options.source == 'string') {
+          // They specified a URL to perform an ajax search
+          this.source = this.ajaxSearch
+          this.url = this.options.source
+          this.ajaxTimeout = 400;
+          if (this.options.ajaxTimeout) {
+            this.ajaxTimeout = this.options.ajaxTimeout;
+          }
+        }
+      }
+    }
+    this.$element.attr("data-text",this.value).attr("autocomplete","off")
   }
 
   Typeahead.prototype = {
@@ -48,10 +66,16 @@
     constructor: Typeahead
 	
   , select: function () {
-      var val = this.$menu.find('.active').attr('data-value')
+      var active = this.$menu.find('.active')
+      var val = active.attr('data-value')
       if(this.autoSelect || val) {
+        var text = val
+        if (active.attr('data-text')) {
+          text = active.attr('data-text')
+        }
         this.$element
-          .val(this.updater(val))
+          .val(this.updater(text))
+          .attr('data-value', val)
           .change()
       }
       return this.hide()
@@ -112,21 +136,34 @@
   , process: function (items) {
       var that = this
 
-      items = $.grep(items, function (item) {
-        return that.matcher(item)
-      })
-
-      items = this.sorter(items)
-
-      if (!items.length) {
-        return this.shown ? this.hide() : this
+      if (!(items instanceof Array)) {
+        // It's an object, not an array, grep manually
+        items = that.grepObject(items, function(item) {
+          return that.matcher(item);
+        });
+        if (!that.values(items).length) {
+          return this.shown ? this.hide() : this;
+        }
+        if (this.options.items == 'all' || this.options.minLength == 0 && !this.$element.val()) {
+          return this.render(items).show()
+        } else {
+          return this.render(that.sliceObject(items, 0, this.options.items)).show()
+        }
+      } else {
+        items = $.grep(items, function (item) {
+          return that.matcher(item)
+        })
+        if (!items.length) {
+          return this.shown ? this.hide() : this;
+        }
+        items = this.sorter(items)
+        if (this.options.items == 'all' || this.options.minLength == 0 && !this.$element.val()) {
+          return this.render(items).show()
+        } else {
+          return this.render(items.slice(0, this.options.items)).show()
+        }
       }
-	  
-	  if (this.options.items == 'all' || this.options.minLength == 0 && !this.$element.val()) {
-		return this.render(items).show()
-	  } else {	
-		return this.render(items.slice(0, this.options.items)).show()
-	  }
+
     }
 
   , matcher: function (item) {
@@ -158,11 +195,12 @@
   , render: function (items) {
       var that = this
 
-      items = $(items).map(function (i, item) {
-        i = $(that.options.item).attr('data-value', item)
+      items = $($.map(items, function (item, i) {
+        var label = item.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#039;/g, "'");
+        i = $(that.options.item).attr('data-value', (items instanceof Array) ? item : i).attr('data-text', label)
         i.find('a').html(that.highlighter(item))
         return i[0]
-      })
+      }))
 
       if (this.autoSelect) {
         items.first().addClass('active')
@@ -314,6 +352,66 @@
   , mouseleave: function (e) {
       this.mousedover = false
       if (!this.focused && this.shown) this.hide()
+    }
+
+  , ajaxSearch: function (q, callback) {
+      var self = this;
+      if (self.ajaxTimeout) {
+        clearTimeout(self.ajaxTimeout);
+        self.ajaxTimeout = setTimeout(function() {
+          if (self.ajaxTimeout) {
+            clearTimeout(self.ajaxTimeout);
+          }
+
+          if (q === "") {
+            self.hide();
+            return;
+          }
+
+          $.get(self.url, {q: q, limit: self.options.items}, function(data) {
+            if (typeof data == "string") {
+              data = JSON.parse(data);
+            }
+            callback(data);
+          });
+        }, self.options.ajaxdelay);
+      }
+    }
+
+  , values: function(obj) {
+      var values = [];
+      for ( var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          values.push(obj[key]);
+        }
+      }
+      return values;
+    }
+
+  , grepObject: function(obj, method) {
+      var values = {};
+      for ( var key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+          if (method(obj[key])) {
+            values[key] = obj[key];
+          }
+        }
+      }
+      return values;
+    }
+
+  , sliceObject: function(obj, start, end) {
+      var values = {};
+      var i = 0;
+      for ( var key in obj ) {
+        if (obj.hasOwnProperty(key)) {
+          if (i >= start && i < end) {
+            values[key] = obj[key];
+          }
+          i++;
+        }
+      }
+      return values;
     }
 
   }
