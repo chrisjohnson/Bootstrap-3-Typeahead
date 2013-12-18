@@ -354,24 +354,24 @@
       var self = this;
       if (self.ajaxTimeout) {
         clearTimeout(self.ajaxTimeout);
-        self.ajaxTimeout = setTimeout(function() {
-          if (self.ajaxTimeout) {
-            clearTimeout(self.ajaxTimeout);
-          }
-
-          if (q === "") {
-            self.hide();
-            return;
-          }
-
-          $.get(self.url, {q: q, limit: self.options.items}, function(data) {
-            if (typeof data == "string") {
-              data = JSON.parse(data);
-            }
-            callback(data);
-          });
-        }, self.options.ajaxdelay);
       }
+      self.ajaxTimeout = setTimeout(function() {
+        if (self.ajaxTimeout) {
+          clearTimeout(self.ajaxTimeout);
+        }
+
+        if (q === "") {
+          self.hide();
+          return;
+        }
+
+        $.get(self.url, {q: q, limit: self.options.items}, function(data) {
+          if (typeof data == "string") {
+            data = JSON.parse(data);
+          }
+          callback(data);
+        });
+      }, self.options.ajaxdelay);
     }
 
   , values: function(obj) {
