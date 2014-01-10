@@ -72,7 +72,9 @@
         this.$element
           .val(this.updater(text))
           .attr('data-value', val)
+          .attr('data-text', text)
           .change()
+		  .trigger('select.typeahead')
       }
       return this.hide()
     }
@@ -233,6 +235,7 @@
         .on('blur',     $.proxy(this.blur, this))
         .on('keypress', $.proxy(this.keypress, this))
         .on('keyup',    $.proxy(this.keyup, this))
+        .on('change',   $.proxy(this.change, this))
 
       if (this.eventSupported('keydown')) {
         this.$element.on('keydown', $.proxy(this.keydown, this))
@@ -317,6 +320,14 @@
       e.stopPropagation()
       e.preventDefault()
   }
+
+  , change: function (e) {
+  		if (this.$element.val() != this.$element.attr('data-text')) {
+			// Text changed from the selected value, remove data-value and data-text
+			this.$element.attr('data-value', '').attr('data-text', '').data('data-value', '').data('data-text', '');
+			this.$element.trigger("deselect.typeahead");
+		}
+	}
 
   , focus: function (e) {
 	  if (!this.focused) {
