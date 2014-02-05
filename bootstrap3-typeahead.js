@@ -55,6 +55,13 @@
       }
     }
     this.$element.attr("data-text",this.value).attr("autocomplete","off")
+    var self = this;
+    this.$element.on("seturl.typeahead", function(e, url) { // A method for updating the typeahead URL (since just changing data-source won't do it)
+		console.log('updating source url');
+      self.source = self.ajaxSearch
+      self.url = url;
+      $(this).attr('data-source', url);
+    });
   }
 
   Typeahead.prototype = {
@@ -85,6 +92,10 @@
 
   , setSource: function (source) {
       this.source = source;
+    }	
+
+  , setUrl: function (url) {
+      this.url = url;
     }	
 
   , show: function () {
