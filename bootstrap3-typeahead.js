@@ -33,6 +33,7 @@
     this.$element = $(element)
     this.options = $.extend({}, $.fn.typeahead.defaults, options)
     this.matcher = this.options.matcher || this.matcher
+    this.filter = this.options.filter || this.filter
     this.sorter = this.options.sorter || this.sorter
     this.autoSelect = typeof this.options.autoSelect == 'boolean' ? this.options.autoSelect : true
     this.highlighter = this.options.highlighter || this.highlighter
@@ -57,7 +58,6 @@
     this.$element.attr("data-text",this.value).attr("autocomplete","off")
     var self = this;
     this.$element.on("seturl.typeahead", function(e, url) { // A method for updating the typeahead URL (since just changing data-source won't do it)
-		console.log('updating source url');
       self.source = self.ajaxSearch
       self.url = url;
       $(this).attr('data-source', url);
@@ -150,8 +150,11 @@
         items = that.grepObject(items, function(item) {
           return that.matcher(item);
         });
-        if (!that.values(items).length) {
-          return this.shown ? this.hide() : this;
+
+        if (that.filter) {
+          if (!that.values(items).length) {
+            return this.shown ? this.hide() : this;
+          }
         }
         if (this.options.items == 'all' || this.options.minLength == 0 && !this.$element.val()) {
           return this.render(items).show()
@@ -159,9 +162,11 @@
           return this.render(that.sliceObject(items, 0, this.options.items)).show()
         }
       } else {
-        items = $.grep(items, function (item) {
-          return that.matcher(item)
-        })
+        if (that.filter) {
+          items = $.grep(items, function (item) {
+            return that.matcher(item)
+          })
+        }
         if (!items.length) {
           return this.shown ? this.hide() : this;
         }
@@ -465,6 +470,7 @@
   , minLength: 1
   , scrollHeight: 0
   , autoSelect: true
+  , filter: false
   }
 
   $.fn.typeahead.Constructor = Typeahead
