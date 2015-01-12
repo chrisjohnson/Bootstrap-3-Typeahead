@@ -61,6 +61,7 @@
       self.source = self.ajaxSearch
       self.url = url;
       $(this).attr('data-source', url);
+      $(this).data('source', url);
     });
   }
 
