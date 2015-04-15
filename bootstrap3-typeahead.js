@@ -63,6 +63,12 @@
       $(this).attr('data-source', url);
       $(this).data('source', url);
     });
+	// Clear input when nothing valid was typed so as not to confuse
+	this.$element.on('blur', function() { 
+		if (!$(this).attr("data-value")) {
+			$(this).val('');
+		}
+	});
   }
 
   Typeahead.prototype = {
