@@ -155,7 +155,7 @@
       if (!(items instanceof Array)) {
         // It's an object, not an array, grep manually
         items = that.grepObject(items, function(item) {
-          return that.matcher(item);
+          return that.matcher(that.item(item));
         });
 
         if (that.filter) {
@@ -171,7 +171,7 @@
       } else {
         if (that.filter) {
           items = $.grep(items, function (item) {
-            return that.matcher(item)
+            return that.matcher(that.item(item))
           })
         }
         if (!items.length) {
@@ -191,6 +191,14 @@
       return ~item.toLowerCase().indexOf(this.query.toLowerCase())
     }
 
+  , item: function (item) {
+      if (typeof item == 'string') {
+        return item;
+      } else {
+        return item.label;
+      }
+    }
+
   , sorter: function (items) {
       var beginswith = []
         , caseSensitive = []
@@ -198,8 +206,8 @@
         , item
 
       while (item = items.shift()) {
-        if (!item.toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
-        else if (~item.indexOf(this.query)) caseSensitive.push(item)
+        if (!this.item(item).toLowerCase().indexOf(this.query.toLowerCase())) beginswith.push(item)
+        else if (~this.item(item).indexOf(this.query)) caseSensitive.push(item)
         else caseInsensitive.push(item)
       }
 
@@ -217,9 +225,17 @@
       var that = this
 
       items = $($.map(items, function (item, i) {
+	  	var tag = '';
+	  	if (typeof item != 'string') {
+			// Instead of a simple name we got an object -- it includes a "tag"
+			if (item.tag) {
+				tag = '<small style="padding-left: 10px;">' + item.tag + '</small>';
+			}
+			item = item.label;
+		}
         var label = item.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, "\"").replace(/&#039;/g, "'");
         i = $(that.options.item).attr('data-value', (items instanceof Array) ? item : i).attr('data-text', label)
-        i.find('a').html(that.highlighter(item))
+        i.find('a').html(that.highlighter(that.item(item)) + tag)
         return i[0]
       }))
 
